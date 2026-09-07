@@ -1,68 +1,133 @@
-import tempfile
+import io
 import os
 import re
-import io
+import tempfile
 from importlib import import_module
 
+# -----------------------------
+# Optional Imports
+# -----------------------------
 try:
     pylint_run = import_module("pylint.lint").Run
     text_reporter = import_module("pylint.reporters.text").TextReporter
-except ImportError:
+except Exception:
     pylint_run = None
     text_reporter = None
 
 try:
     cc_visit = import_module("radon.complexity").cc_visit
-except ImportError:
+except Exception:
     cc_visit = None
 
-def analyze_code_quality(code):
-    """Returns (score: float, issues: list, avg_complexity: float)."""
-    # Complexity
-    try:
-        if cc_visit is None:
-            raise ImportError("radon is not installed")
-        blocks = cc_visit(code)
-        total = sum(b.complexity for b in blocks)
-        avg_complexity = total / max(1, len(blocks))
-    except Exception:
-        avg_complexity = 0.0
 
-    # Pylint
-    pylint_score = 10.0
+# -----------------------------
+# Code Quality Analyzer
+# -----------------------------
+def analyze_code_quality(code: str):
+    """
+    Analyze Python code quality using Radon and Pylint.
+
+    Returns:
+        score (float): Overall quality score out of 100.
+        issues (list): List of pylint issues.
+        complexity (float): Average cyclomatic complexity.
+    """
+
     issues = []
-    temp_path = None
+    pylint_score = 10.0
+    avg_complexity = 0.0
+
+    # -----------------------------
+    # Cyclomatic Complexity
+    # -----------------------------
     try:
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False, encoding='utf-8') as f:
-            f.write(code)
-            temp_path = f.name
+        if cc_visit:
+            blocks = cc_visit(code)
 
-        out = io.StringIO()
+            if blocks:
+                total_complexity = sum(block.complexity for block in blocks)
+                avg_complexity = total_complexity / len(blocks)
+
+    except Exception as e:
+        issues.append(f"Radon analysis failed: {str(e)}")
+
+    # -----------------------------
+    # Pylint Analysis
+    # -----------------------------
+    temp_file = None
+
+    try:
         if pylint_run is None or text_reporter is None:
-            raise ImportError("pylint is not installed")
-        reporter = text_reporter(out)
-        pylint_run([temp_path], reporter=reporter, exit=False)
-        output = out.getvalue()
+            raise Exception("Pylint is not installed.")
 
-        match = re.search(r"Your code has been rated at ([\d.]+)/10", output)
-        if match:
-            pylint_score = float(match.group(1))
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=".py",
+            delete=False,
+            encoding="utf-8",
+        ) as file:
+            file.write(code)
+            temp_file = file.name
 
-        for line in output.split('\n'):
-            if ':' in line and any(k in line.lower() for k in ['error', 'warning', 'convention']):
+        pylint_output = io.StringIO()
+        reporter = text_reporter(pylint_output)
+
+        pylint_run(
+            [temp_file],
+            reporter=reporter,
+            exit=False,
+        )
+
+        output = pylint_output.getvalue()
+
+        score_match = re.search(
+            r"rated at ([\d\.-]+)/10",
+            output,
+            re.IGNORECASE,
+        )
+
+        if score_match:
+            pylint_score = float(score_match.group(1))
+
+        for line in output.splitlines():
+            lower = line.lower()
+
+            if any(
+                keyword in lower
+                for keyword in [
+                    "error",
+                    "warning",
+                    "convention",
+                    "refactor",
+                    "unused",
+                ]
+            ):
                 issues.append(line.strip())
+
         issues = issues[:10]
+
     except Exception as e:
         issues.append(f"Pylint analysis failed: {str(e)}")
+
     finally:
-        if temp_path and os.path.exists(temp_path):
-            os.unlink(temp_path)
+        if temp_file and os.path.exists(temp_file):
+            try:
+                os.remove(temp_file)
+            except Exception:
+                pass
 
-    combined = (pylint_score / 10) * 100
+    # -----------------------------
+    # Combined Quality Score
+    # -----------------------------
+    score = max(0, min(100, pylint_score * 10))
+
     if avg_complexity > 15:
-        combined -= 20
+        score -= 20
     elif avg_complexity > 10:
-        combined -= 10
-    combined = max(0, min(100, combined))
+        score -= 10
+    elif avg_complexity > 5:
+        score -= 5
 
-    return round(combined, 1), issues, round(avg_complexity, 2)
+    score = max(0, min(100, score))
+
+    return round(score, 1), issues, round(avg_complexity, 2)
