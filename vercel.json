@@ -1,21 +1,9 @@
 {
-  "version": 2,
-  "builds": [
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
     {
-      "src": "backend/app.py",
-      "use": "@vercel/python",
-      "config": {
-        "runtime": "python3.10"
-      }
+      "source": "/(.*)",
+      "destination": "/app.py"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "backend/app.py"
-    }
-  ],
-  "env": {
-    "GROQ_API_KEY": "@groq_api_key"
-  }
+  ]
 }

@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask, request, jsonify, send_from_directory
@@ -14,7 +15,13 @@ from core.repo_utils import clone_and_analyze_repo
 
 load_dotenv()
 
-app = Flask(__name__, static_folder='../frontend/static', template_folder='../frontend/templates')
+BACKEND_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = BACKEND_DIR.parent / 'frontend'
+app = Flask(
+    __name__,
+    static_folder=str(FRONTEND_DIR / 'static'),
+    template_folder=str(FRONTEND_DIR / 'templates'),
+)
 
 
 @app.after_request
@@ -27,11 +34,11 @@ def add_cors_headers(response):
 
 @app.route('/')
 def index():
-    return send_from_directory('../frontend/templates', 'index.html')
+    return send_from_directory(app.template_folder, 'index.html')
 
 @app.route('/static/<path:path>')
 def static_files(path):
-    return send_from_directory('../frontend/static', path)
+    return send_from_directory(app.static_folder, path)
 
 # ---------- API ----------
 @app.route('/api/health', methods=['GET'])
