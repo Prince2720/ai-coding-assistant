@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Coding Assistant · Pro</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Toast Notification -->
+        <div id="toast" class="toast hidden">Copied!</div>
+
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-robot"></i> AI Coding Assistant</h1>
+            </div>
+            <p class="subtitle">Generate, explain, debug, convert, document, test & refactor — all with AI.</p>
+        </header>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-group">
+                <div class="select-wrapper">
+                    <i class="fas fa-tools"></i>
+                    <select id="featureSelect">
+                        <option value="generate">Generate</option>
+                        <option value="explain">Explain</option>
+                        <option value="debug">Debug</option>
+                        <option value="convert">Convert</option>
+                        <option value="docs">Docs</option>
+                        <option value="tests">Tests</option>
+                        <option value="refactor">Refactor</option>
+                    </select>
+                </div>
+                <input id="targetLang" placeholder="Target language (e.g. Java)" style="display:none;" />
+            </div>
+
+            <div class="toolbar-group">
+                <button id="actionBtn" class="btn btn-primary"><i class="fas fa-play"></i> Execute</button>
+                <button id="analyzeQualityBtn" class="btn btn-secondary"><i class="fas fa-chart-line"></i> Quality</button>
+            </div>
+
+            <div class="toolbar-group github-group">
+                <input type="text" id="githubUrl" placeholder="GitHub repo URL (e.g. https://github.com/user/repo)" />
+                <button id="analyzeRepoBtn" class="btn btn-github"><i class="fab fa-github"></i> Analyze</button>
+            </div>
+        </div>
+
+        <!-- Editor & Output Area -->
+        <div class="main-area">
+            <!-- Editor -->
+            <div class="editor-wrapper">
+                <div class="editor-header">
+                    <span><i class="fas fa-file-code"></i> Editor</span>
+                    <div class="header-actions">
+                        <button id="copyEditorBtn" class="btn-icon" title="Copy editor code"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+                <div id="editor"></div>
+            </div>
+
+            <!-- Output -->
+            <div class="output-wrapper">
+                <div class="output-header">
+                    <span><i class="fas fa-reply-all"></i> Output</span>
+                    <div class="header-actions">
+                        <button id="copyOutputBtn" class="btn-icon" title="Copy output"><i class="fas fa-copy"></i></button>
+                        <button id="clearOutputBtn" class="btn-icon" title="Clear output"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div id="output">
+                    <div class="output-placeholder">
+                        <i class="fas fa-lightbulb"></i>
+                        <p>Your AI response will appear here...</p>
+                    </div>
+                </div>
+                <!-- Loading overlay -->
+                <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Thinking...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <span class="footer-highlight">Built with ❤️ by Prince.</span>
+        </footer>
+    </div>
+
+    <!-- Monaco Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
+    <script src="/static/script.js"></script>
+</body>
+</html>
