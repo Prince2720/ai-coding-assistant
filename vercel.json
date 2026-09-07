@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "backend/app.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "runtime": "python3.10"
+      }
     }
   ],
   "routes": [
@@ -11,8 +14,5 @@
       "src": "/(.*)",
       "dest": "backend/app.py"
     }
-  ],
-  "env": {
-    "GROQ_API_KEY": "@groq_api_key"
-  }
+  ]
 }
