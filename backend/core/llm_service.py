@@ -2,6 +2,7 @@ import os
 import time
 from pathlib import Path
 from openai import OpenAI, RateLimitError, APIError
+
 from dotenv import load_dotenv
 
 ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
